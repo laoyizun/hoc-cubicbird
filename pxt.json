@@ -2,7 +2,8 @@
     "name": "hoc-cubicbird",
     "description": "",
     "dependencies": {
-        "device": "*"
+        "device": "*",
+        "animation": "*"
     },
     "files": [
         "main.blocks",
