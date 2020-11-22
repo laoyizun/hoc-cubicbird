@@ -7,6 +7,11 @@ namespace hocCubicbird {
         没有基础的小白
     }
 
+    export enum Level {
+        第一关,
+        第二关
+    }
+
     const MATH_QUIZ_SPRITE_KIND = SpriteKind.create()
     
     export enum Operator {
@@ -47,6 +52,7 @@ namespace hocCubicbird {
     const PROBLEM_SIZE = 10
     const RESULT_SIZE = 50
     let _difficulty = Difficulty.有基础的大神
+    let _level = Level.第一关
     let _currentAnswer = NaN;
 
     let leftOpSprite :Sprite = null
@@ -55,13 +61,29 @@ namespace hocCubicbird {
     let challengerSprite:Sprite = null
     let judgeSprite:Sprite = null
 
+    interface Result {
+        level1Correct:number
+        level2avgCorrect:boolean
+        level2hsCorrect:boolean
+        level2hsCountCorrect:boolean
+    }
+
+    let _result:Result  = {
+        level1Correct:0,
+        level2avgCorrect:false,
+        level2hsCorrect:false,
+        level2hsCountCorrect:false
+    }
+
 
     //% blockId=start_test
-    //% block="开始测验，我是 %difficulty"
+    //% block="我是 %difficulty 开始 %level"
     //% group="做数学题"
-    export function startGame(difficulty:Difficulty) {
+    export function startGame(difficulty:Difficulty, level:Level) {
 
         _difficulty = difficulty
+
+        _level = level
 
     }
 
@@ -84,6 +106,17 @@ namespace hocCubicbird {
 
     let answerCallback :(leftOperand:number, operator:Operator, rightOperand:number)=>void = null
 
+    let statFinishedCallback : ()=>void = null
+
+
+    //% blockId=on_stat_finished
+    //% group="统计成绩"
+    //% block="统计完成后"
+    //% draggableParameters
+    export function onStatFinished(cb:()=>void) {
+        statFinishedCallback = cb
+    }
+
     //% blockId=on_problem
     //% group="做数学题"
     //% block="拿到题目"
@@ -94,11 +127,11 @@ namespace hocCubicbird {
 
     let statCallback :(name:string, score:number) =>void = null
 
-    //% blockId=on_stat
+    //% blockId=on_result_received
     //% group="统计成绩"
     //% block="拿到卷子"
     //% draggableParameters
-    export function onStat(cb:(studentId:string, score:number)=>void) {
+    export function onResultReceived(cb:(studentId:string, score:number)=>void) {
         statCallback = cb
     }
 
@@ -106,10 +139,16 @@ namespace hocCubicbird {
     let _submitHighestScore = 0
     let _submitHighestScoreCount = 0 
 
+    //% blockId=submit_avg
+    //% group="统计成绩"
+    //% block="提交平均分 %avg"
     export function submitAvg(avg:number) {
         _submitAvg = avg
     }
 
+    //% blockId=submit_hs
+    //% group="统计成绩"
+    //% block="提交最高分 %highscore 及最高分人数 %highscoreCount"
     export function submitHighestScore(highscore:number, highscoreCount:number) {
         _submitHighestScore = highscore
         _submitHighestScoreCount = highscoreCount
@@ -120,6 +159,12 @@ namespace hocCubicbird {
             sprite.destroy()
         }
     }
+
+    function clearScoreStatScene() {
+        challengerSprite.destroy()
+        judgeSprite.destroy()
+    }
+
 
     function scoreStat() {
 
@@ -223,42 +268,30 @@ namespace hocCubicbird {
 
             statCallback(studentId.toString(), score)
 
-            challengerSprite.say(".")
-            pause(100 / speedRatio)
-            challengerSprite.say("..")
-            pause(100 / speedRatio)
-            challengerSprite.say("...")
-            pause(100 / speedRatio)
-            challengerSprite.say("....")
-            pause(100 / speedRatio)
-            challengerSprite.say(".....")
-            pause(100 / speedRatio)
+            challengeThinks(5, 100 / speedRatio)
+            
         }
+
+        pause(1000)
 
         judgeSprite.say("统计好了吧")
         pause(1000)
         judgeSprite.say("我们核对一下统计结果")
         pause(1000)
 
+        statFinishedCallback()
+
         let avg = sum / RESULT_SIZE
 
         judgeSprite.say("平均分是？")
 
-        challengerSprite.say(".")
-        pause(50)
-        challengerSprite.say("..")
-        pause(50)
-        challengerSprite.say("...")
-        pause(50)
-        challengerSprite.say("....")
-        pause(50)
-        challengerSprite.say(".....")
-        pause(50)
+        challengeThinks(5, 50)
 
         challengerSprite.say(_submitAvg.toString())
         pause(1000)
 
         if (avg == _submitAvg) {
+            _result.level2avgCorrect = true
             judgeSprite.say("嗯，正确!")
         } else {
             scene.cameraShake()
@@ -269,21 +302,13 @@ namespace hocCubicbird {
 
         judgeSprite.say("最高分是？")
         
-        challengerSprite.say(".")
-        pause(50)
-        challengerSprite.say("..")
-        pause(50)
-        challengerSprite.say("...")
-        pause(50)
-        challengerSprite.say("....")
-        pause(50)
-        challengerSprite.say(".....")
-        pause(50)
+        challengeThinks(5, 50)
 
         challengerSprite.say(_submitHighestScore.toString())
         pause(1000)
         
         if (hs == _submitHighestScore) {
+            _result.level2hsCorrect = true
             judgeSprite.say("嗯，正确!")
         } else {
             scene.cameraShake()
@@ -293,27 +318,28 @@ namespace hocCubicbird {
 
         judgeSprite.say("最高分有几个人？")
         
-        challengerSprite.say(".")
-        pause(50)
-        challengerSprite.say("..")
-        pause(50)
-        challengerSprite.say("...")
-        pause(50)
-        challengerSprite.say("....")
-        pause(50)
-        challengerSprite.say(".....")
-        pause(50)
+        challengeThinks(5, 50)
 
         challengerSprite.say(_submitHighestScoreCount.toString())
         pause(1000)
 
         if (cnt == _submitHighestScoreCount) {
+            _result.level2hsCountCorrect = true
             judgeSprite.say("嗯，正确!")
         } else {
             scene.cameraShake()            
             judgeSprite.say("错了呀，应该是" + hs.toString())
         }
 
+    }
+
+    function challengeThinks(times:number, pauseMillis:number) {
+        let str = ""
+        for (let i = 0;i < times;i++) {
+            str += "."
+            challengerSprite.say(str)
+            pause(pauseMillis)    
+        }
     }
 
     function mathQuiz() {
@@ -490,9 +516,9 @@ namespace hocCubicbird {
 
             pause(1000)
             if (_currentAnswer == correctAnswer) {
+                _result.level1Correct += 1
                 info.changeScoreBy(10)
                 judgeSprite.say("回答正确")
-                
             }  else {
                 scene.cameraShake()
                 judgeSprite.say("回答错误")
@@ -505,12 +531,22 @@ namespace hocCubicbird {
         pause(3000)
     }
 
+    function summary() {
+        
+    }
+
     control.runInParallel(function() {
-        mathQuiz()
+        if (_level === Level.第一关) {
+            mathQuiz()
 
-        clearMathQuizScene()
-
+            clearMathQuizScene()
+        }
         scoreStat()
+
+        clearScoreStatScene()
+
+        summary()
+
         
     })
 

@@ -15,7 +15,7 @@ namespace myTiles {
 . . . . . . . . . . 
 . . . . . . . . . . 
 `, [myTiles.transparency16,sprites.dungeon.stairLadder,sprites.dungeon.floorLight2,sprites.dungeon.floorDark2], TileScale.Sixteen)
-            case "level_0": return tiles.createTilemap(hex`0a0008000105050505050505050402060606060606060603020606060606060606030206060606060606060302060606060606060603020606060606060606030206060606060606060302060606060606060603`, img`
+            case "level_0": return tiles.createTilemap(hex`0a0008000105050505050505050402060606060606060603020606060606060606030206060707070706060302060606060606060603020606060606060606030206060606060606060302060606060606060603`, img`
 . . . . . . . . . . 
 . . . . . . . . . . 
 . . . . . . . . . . 
@@ -24,7 +24,7 @@ namespace myTiles {
 . . . . . . . . . . 
 . . . . . . . . . . 
 . . . . . . . . . . 
-`, [myTiles.transparency16,sprites.dungeon.darkGroundNorthWest0,sprites.dungeon.darkGroundWest,sprites.dungeon.darkGroundEast,sprites.dungeon.darkGroundNorthEast0,sprites.dungeon.darkGroundNorth,sprites.dungeon.darkGroundCenter], TileScale.Sixteen)
+`, [myTiles.transparency16,sprites.dungeon.darkGroundNorthWest0,sprites.dungeon.darkGroundWest,sprites.dungeon.darkGroundEast,sprites.dungeon.darkGroundNorthEast0,sprites.dungeon.darkGroundNorth,sprites.dungeon.darkGroundCenter,sprites.dungeon.stairLadder], TileScale.Sixteen)
         }
         return null;
     })
