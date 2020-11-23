@@ -168,7 +168,7 @@ namespace hocCubicbird {
 
     function scoreStat() {
 
-        tiles.setTilemap(tilemap`level_0`)
+        //tiles.setTilemap(tilemap`level`)
 
         judgeSprite = sprites.create(img`
             . . . f f f f f . . . .
