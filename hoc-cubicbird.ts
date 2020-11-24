@@ -49,7 +49,7 @@ namespace hocCubicbird {
         return Operator.ADD
     }
 
-    const PROBLEM_SIZE = 10
+    const PROBLEM_SIZE = 1 //测试修改：第一关题目减少
     const RESULT_SIZE = 50
     let _difficulty = Difficulty.有基础的大神
     let _level = Level.第一关
@@ -170,28 +170,28 @@ namespace hocCubicbird {
 
         //tiles.setTilemap(tilemap`level`)
 
-        judgeSprite = sprites.create(img`
-            . . . f f f f f . . . .
-            . . f e e e e e f f . .
-            . f e e e e e e e f f .
-            f e e e e e e e f f f f
-            f e e 4 e e e f f f f f
-            f e e 4 4 e e e f f f f
-            f f e 4 4 4 4 4 f f f f
-            f f e 4 4 f f 4 e 4 f f
-            . f f d d d d 4 d 4 f .
-            . . f b b d d 4 f f f .
-            . . f e 4 4 4 e e f . .
-            . . f 1 1 1 e d d 4 . .
-            . . f 1 1 1 e d d e . .
-            . . f 6 6 6 f e e f . .
-            . . . f f f f f f . . .
-            . . . . . f f f . . . .
-        `)
+        // judgeSprite = sprites.create(img`
+        //     . . . f f f f f . . . .
+        //     . . f e e e e e f f . .
+        //     . f e e e e e e e f f .
+        //     f e e e e e e e f f f f
+        //     f e e 4 e e e f f f f f
+        //     f e e 4 4 e e e f f f f
+        //     f f e 4 4 4 4 4 f f f f
+        //     f f e 4 4 f f 4 e 4 f f
+        //     . f f d d d d 4 d 4 f .
+        //     . . f b b d d 4 f f f .
+        //     . . f e 4 4 4 e e f . .
+        //     . . f 1 1 1 e d d 4 . .
+        //     . . f 1 1 1 e d d e . .
+        //     . . f 6 6 6 f e e f . .
+        //     . . . f f f f f f . . .
+        //     . . . . . f f f . . . .
+        // `)
 
-        judgeSprite.x += 48
-        judgeSprite.y += 32
-
+        //judgeSprite.x += 48
+        //judgeSprite.y += 32
+        
         challengerSprite = sprites.create(img`
             . . . . . f f 4 4 f f . . . . .
             . . . . f 5 4 5 5 4 5 f . . . .
@@ -211,10 +211,40 @@ namespace hocCubicbird {
             . . . . . f f b b f f . . . . .
         `)
         challengerSprite.y -= 20
+        challengerSprite.x += 288//更改：位置需要右编移动十八格
+
+        //过场动画
+        judgeSprite.setImage(img`
+            . . . . f f f f f . . .
+            . . f f e e e e e f . .
+            . f f e e e e e e e f .
+            f f f f e e e e e e e f
+            f f f f f e e e 4 e e f
+            f f f f e e e 4 4 e e f
+            f f f f 4 4 4 4 4 e f f
+            f f 4 e 4 f f 4 4 e f f
+            . f 4 d 4 d d d d f f .
+            . f f f 4 d d b b f . .
+            . . f e e 4 4 4 e f . .
+            . . 4 d d e 1 1 1 f . .
+            . . e d d e 1 1 1 f . .
+            . . f e e f 6 6 6 f . .
+            . . . f f f f f f . . .
+            . . . . f f f . . . . .
+        `)
+        scene.cameraFollowSprite(judgeSprite)
+        judgeSprite.say("改好卷子了")
+        pause(1000)
+        judgeSprite.say("要去统计分数")
+        judgeSprite.vx = 250//测试修改速度十倍
+        pause(600)//测试修改时间减少十倍
+        judgeSprite.say("")
+        scene.cameraFollowSprite(challengerSprite)
+        pause(500)
 
         judgeSprite.say("老师")
         pause(1000)
-        judgeSprite.say("刚刚的数据考试卷子都改好了")
+        judgeSprite.say("刚刚的数据考试的卷子都改好了")
         pause(1000)
         judgeSprite.say("快点统计这次的成绩吧")
         pause(1000)
@@ -263,6 +293,8 @@ namespace hocCubicbird {
                 . 1 1 1 1 1 1 1 1 1 1 1 1 1 1 .
                 . . 1 1 1 1 1 1 1 1 1 1 1 1 . .
             `, judgeSprite, 0, 0)
+            paperSprite.vy = -100//更改：paper先往上移动半秒，防止撞墙销毁
+            pause(500)//
             paperSprite.follow(challengerSprite, 100)
             paperSprite.lifespan = 1000
 
@@ -343,7 +375,7 @@ namespace hocCubicbird {
     }
 
     function mathQuiz() {
-        tiles.setTilemap(tilemap`level`)
+        tiles.setTilemap(tilemap`level`)//设置场景
 
         leftOpSprite = sprites.create(img`
             . . . . f f f f . . . . .
@@ -455,7 +487,7 @@ namespace hocCubicbird {
         }
         judgeSprite.say("挑战开始")
         pause(1000)
-
+        
         for(let i = 0; i < PROBLEM_SIZE; i++) {
             judgeSprite.say("请听题")
             leftOpSprite.say("")
@@ -539,7 +571,7 @@ namespace hocCubicbird {
         if (_level === Level.第一关) {
             mathQuiz()
 
-            clearMathQuizScene()
+            //clearMathQuizScene()
         }
         scoreStat()
 
