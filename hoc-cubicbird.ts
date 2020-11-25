@@ -49,7 +49,7 @@ namespace hocCubicbird {
         return Operator.ADD
     }
 
-    const PROBLEM_SIZE = 1 //测试修改：第一关题目减少
+    const PROBLEM_SIZE = 10 //测试修改：第一关题目减少
     const RESULT_SIZE = 50
     let _difficulty = Difficulty.有基础的大神
     let _level = Level.第一关
@@ -236,8 +236,8 @@ namespace hocCubicbird {
         judgeSprite.say("改好卷子了")
         pause(1000)
         judgeSprite.say("要去统计分数")
-        judgeSprite.vx = 250//测试修改速度十倍
-        pause(600)//测试修改时间减少十倍
+        judgeSprite.vx = 50//测试修改速度十倍
+        pause(3000)//测试修改时间减少十倍
         judgeSprite.say("")
         scene.cameraFollowSprite(challengerSprite)
         pause(500)
