@@ -2,17 +2,13 @@
 // block="编程一小时" % groups='["做数学题", "统计成绩"]'
 namespace hocCubicbird {
 
-    export enum Difficulty {
-        有基础的大神,
-        没有基础的小白
-    }
-
     export enum Level {
         第一关,
         第二关
     }
 
     const MATH_QUIZ_SPRITE_KIND = SpriteKind.create()
+    const JUDGE_SPRITE_KIND = SpriteKind.create()
     
     export enum Operator {
         //% block="add"
@@ -49,11 +45,12 @@ namespace hocCubicbird {
         return Operator.ADD
     }
 
-    const PROBLEM_SIZE = 1 //测试修改：第一关题目减少
+    const PROBLEM_SIZE = 10 //测试修改：第一关题目减少
     const RESULT_SIZE = 50
-    let _difficulty = Difficulty.有基础的大神
     let _level = Level.第一关
     let _currentAnswer = NaN;
+
+    let challengerName :string = "方块鸟"
 
     let leftOpSprite :Sprite = null
     let opSprite :Sprite = null
@@ -82,14 +79,11 @@ namespace hocCubicbird {
 
 
     //% blockId=start_test
-    //% block="我是 %difficulty 开始 %level"
+    //% block="我是 %name 开始 %level"
     //% group="做数学题"
-    export function startGame(difficulty:Difficulty, level:Level) {
-
-        _difficulty = difficulty
-
+    export function startGame(name:string, level:Level) {
+        challengerName = name
         _level = level
-
     }
 
     //% blockId=give_answer
@@ -167,9 +161,52 @@ namespace hocCubicbird {
 
     function clearScoreStatScene() {
         challengerSprite.destroy()
-        judgeSprite.destroy()
+        // judgeSprite.destroy()
+    }
 
-        tiles.setTilemap(tilemap`level_1`)
+    function intermission() {
+        //过场动画 -begin--
+        scene.onOverlapTile(JUDGE_SPRITE_KIND, myTiles.tile5, function(sprite: Sprite, location: tiles.Location) {
+            sprite.vx = 0
+        })
+
+        judgeSprite.setImage(img`
+            . . . . f f f f f . . .
+            . . f f e e e e e f . .
+            . f f e e e e e e e f .
+            f f f f e e e e e e e f
+            f f f f f e e e 4 e e f
+            f f f f e e e 4 4 e e f
+            f f f f 4 4 4 4 4 e f f
+            f f 4 e 4 f f 4 4 e f f
+            . f 4 d 4 d d d d f f .
+            . f f f 4 d d b b f . .
+            . . f e e 4 4 4 e f . .
+            . . 4 d d e 1 1 1 f . .
+            . . e d d e 1 1 1 f . .
+            . . f e e f 6 6 6 f . .
+            . . . f f f f f f . . .
+            . . . . f f f . . . . .
+        `)
+        scene.cameraFollowSprite(judgeSprite)
+        judgeSprite.say("改好卷子了")
+        pause(1000)
+        judgeSprite.say("要去统计分数")
+        judgeSprite.vx = 50//测试修改速度十倍
+        pause(3000)//测试修改时间减少十倍
+        judgeSprite.say("")
+        scene.cameraFollowSprite(challengerSprite)
+        pause(500)
+
+        // TODO 此处有bug，下面两句较长的话都没有输出；
+        judgeSprite.say("老师")
+        pause(1000)
+        judgeSprite.say("刚刚的数据考试的卷子都改好了")
+        pause(1000)
+        judgeSprite.say("快点统计这次的成绩吧")
+        pause(1000)
+
+        //过场动画 -end--
     }
 
 
@@ -220,43 +257,9 @@ namespace hocCubicbird {
         challengerSprite.y -= 20
         challengerSprite.x += 288//更改：位置需要右编移动十八格
 
-        //过场动画
-        judgeSprite.setImage(img`
-            . . . . f f f f f . . .
-            . . f f e e e e e f . .
-            . f f e e e e e e e f .
-            f f f f e e e e e e e f
-            f f f f f e e e 4 e e f
-            f f f f e e e 4 4 e e f
-            f f f f 4 4 4 4 4 e f f
-            f f 4 e 4 f f 4 4 e f f
-            . f 4 d 4 d d d d f f .
-            . f f f 4 d d b b f . .
-            . . f e e 4 4 4 e f . .
-            . . 4 d d e 1 1 1 f . .
-            . . e d d e 1 1 1 f . .
-            . . f e e f 6 6 6 f . .
-            . . . f f f f f f . . .
-            . . . . f f f . . . . .
-        `)
-        scene.cameraFollowSprite(judgeSprite)
-        judgeSprite.say("改好卷子了")
-        pause(1000)
-        judgeSprite.say("要去统计分数")
-        judgeSprite.vx = 50//测试修改速度十倍
-        pause(3000)//测试修改时间减少十倍
-        judgeSprite.say("")
-        scene.cameraFollowSprite(challengerSprite)
-        pause(500)
 
-
-        // TODO 此处有bug，下面两句较长的话都没有输出；
-        judgeSprite.say("老师")
-        pause(1000)
-        judgeSprite.say("刚刚的数据考试的卷子都改好了")
-        pause(1000)
-        judgeSprite.say("快点统计这次的成绩吧")
-        pause(1000)
+        intermission()
+        
                 
         let sum = 0
         let hs = 0
@@ -302,9 +305,9 @@ namespace hocCubicbird {
                 . 1 1 1 1 1 1 1 1 1 1 1 1 1 1 .
                 . . 1 1 1 1 1 1 1 1 1 1 1 1 . .
             `, judgeSprite, 0, 0)
-            paperSprite.vy = -100//更改：paper先往上移动半秒，防止撞墙销毁
+            // paperSprite.vy = -100//更改：paper先往上移动半秒，防止撞墙销毁
 
-            pause(500)
+            // pause(500)
             paperSprite.follow(challengerSprite, 100)
             paperSprite.lifespan = 1000    
 
@@ -487,11 +490,17 @@ namespace hocCubicbird {
             . . f 6 6 6 f e e f . .
             . . . f f f f f f . . .
             . . . . . f f f . . . .
-        `,MATH_QUIZ_SPRITE_KIND)
+        `, JUDGE_SPRITE_KIND)
         judgeSprite.x += 64
         judgeSprite.y += 20
 
         judgeSprite.say("下一位挑战者")
+
+        control.runInParallel(function() {
+            pause(1000)
+            judgeSprite.say(challengerName)            
+        })
+
         while(challengerSprite.vy != 0) {
             pause(10)
         }
@@ -540,7 +549,6 @@ namespace hocCubicbird {
             pause(500)
             rightOpSprite.say(rightOperand.toString())
 
-
             challengeThinks(5, 200)
 
             answerCallback(leftOperand, operator, rightOperand)
@@ -575,7 +583,11 @@ namespace hocCubicbird {
     }
 
     function summary() {
-    
+
+        tiles.placeOnTile(judgeSprite, tiles.getTileLocation(9,1))
+        judgeSprite.say(challengerName)
+
+        tiles.setTilemap(tilemap`level_1`)
         scroll.textUp(_result.problemLines)
 
     }
