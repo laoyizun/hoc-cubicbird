@@ -49,7 +49,7 @@ namespace hocCubicbird {
         return Operator.ADD
     }
 
-    const PROBLEM_SIZE = 10 //测试修改：第一关题目减少
+    const PROBLEM_SIZE = 1 //测试修改：第一关题目减少
     const RESULT_SIZE = 50
     let _difficulty = Difficulty.有基础的大神
     let _level = Level.第一关
@@ -62,6 +62,9 @@ namespace hocCubicbird {
     let judgeSprite:Sprite = null
 
     interface Result {
+
+        problemLines:ProblemResult[]
+
         level1Correct:number
         level2avgCorrect:boolean
         level2hsCorrect:boolean
@@ -69,6 +72,8 @@ namespace hocCubicbird {
     }
 
     let _result:Result  = {
+
+        problemLines:[],
         level1Correct:0,
         level2avgCorrect:false,
         level2hsCorrect:false,
@@ -163,6 +168,8 @@ namespace hocCubicbird {
     function clearScoreStatScene() {
         challengerSprite.destroy()
         judgeSprite.destroy()
+
+        tiles.setTilemap(tilemap`level_1`)
     }
 
 
@@ -242,13 +249,15 @@ namespace hocCubicbird {
         scene.cameraFollowSprite(challengerSprite)
         pause(500)
 
+
+        // TODO 此处有bug，下面两句较长的话都没有输出；
         judgeSprite.say("老师")
         pause(1000)
         judgeSprite.say("刚刚的数据考试的卷子都改好了")
         pause(1000)
         judgeSprite.say("快点统计这次的成绩吧")
         pause(1000)
-        
+                
         let sum = 0
         let hs = 0
         let cnt = 0
@@ -294,9 +303,10 @@ namespace hocCubicbird {
                 . . 1 1 1 1 1 1 1 1 1 1 1 1 . .
             `, judgeSprite, 0, 0)
             paperSprite.vy = -100//更改：paper先往上移动半秒，防止撞墙销毁
-            pause(500)//
+
+            pause(500)
             paperSprite.follow(challengerSprite, 100)
-            paperSprite.lifespan = 1000
+            paperSprite.lifespan = 1000    
 
             statCallback(studentId.toString(), score)
 
@@ -508,7 +518,7 @@ namespace hocCubicbird {
                     if (leftOperand < rightOperand) {
                         let temp = leftOperand
                         leftOperand = rightOperand
-                        rightOperand = leftOperand
+                        rightOperand = temp
                     }
                     correctAnswer = leftOperand - rightOperand; 
                     break;
@@ -531,27 +541,28 @@ namespace hocCubicbird {
             rightOpSprite.say(rightOperand.toString())
 
 
-            challengerSprite.say(".")
-            pause(200)
-            challengerSprite.say("..")
-            pause(200)
-            challengerSprite.say("...")
-            pause(200)
-            challengerSprite.say("....")
-            pause(200)
-            challengerSprite.say(".....")
-            pause(200)
+            challengeThinks(5, 200)
 
             answerCallback(leftOperand, operator, rightOperand)
 
             challengerSprite.say('答案是:' + _currentAnswer.toString())
 
+
+            const lineForResult = leftOperand.toString() + opString(operator) + rightOperand.toString() + "=" + _currentAnswer.toString()
             pause(1000)
             if (_currentAnswer == correctAnswer) {
+                _result.problemLines.push({
+                    line: lineForResult,
+                    isCorrect:true
+                })
                 _result.level1Correct += 1
                 info.changeScoreBy(10)
                 judgeSprite.say("回答正确")
             }  else {
+                _result.problemLines.push({
+                    line: lineForResult,
+                    isCorrect:false
+                })
                 scene.cameraShake()
                 judgeSprite.say("回答错误")
             }
@@ -564,14 +575,16 @@ namespace hocCubicbird {
     }
 
     function summary() {
-        
+    
+        scroll.textUp(_result.problemLines)
+
     }
 
     control.runInParallel(function() {
         if (_level === Level.第一关) {
             mathQuiz()
 
-            //clearMathQuizScene()
+            clearMathQuizScene()
         }
         scoreStat()
 
