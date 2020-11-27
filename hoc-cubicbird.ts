@@ -7,6 +7,15 @@ namespace hocCubicbird {
         第二关
     }
 
+    export enum GameSpeed {
+        // %block="正常速度"
+        NORMAL = 1,
+        // %block="四倍速度"
+        FAST = 4,
+        // %block="十六倍速度"
+        FASTER = 16,
+    }
+
     const MATH_QUIZ_SPRITE_KIND = SpriteKind.create()
     const JUDGE_SPRITE_KIND = SpriteKind.create()
     
@@ -49,6 +58,7 @@ namespace hocCubicbird {
     const RESULT_SIZE = 50
     let _level = Level.第一关
     let _currentAnswer = NaN;
+    let _currentSpeed = GameSpeed.FASTER;
 
     let challengerName :string = "方块鸟"
 
@@ -91,6 +101,17 @@ namespace hocCubicbird {
     //% group="做数学题"
     export function giveAnswer(answer:number) {
         _currentAnswer = answer
+    }
+
+    //% blockId=set_speed
+    //% block="设定游戏速度 %speed"
+    //% group="做数学题"
+    export function setGameSpeed(speed:GameSpeed) {
+        _currentSpeed = speed
+    }
+
+    function pauseImpl(millis : number) {
+        pause(millis / _currentSpeed)
     }
 
     function opString(operator:Operator):string {
@@ -161,7 +182,6 @@ namespace hocCubicbird {
 
     function clearScoreStatScene() {
         challengerSprite.destroy()
-        // judgeSprite.destroy()
     }
 
     function intermission() {
@@ -190,22 +210,21 @@ namespace hocCubicbird {
         `)
         scene.cameraFollowSprite(judgeSprite)
         judgeSprite.say("改好卷子了")
-        pause(1000)
+        pauseImpl(1000)
         judgeSprite.say("要去统计分数")
         judgeSprite.vx = 50//测试修改速度十倍
         pause(3000)//测试修改时间减少十倍
         judgeSprite.say("")
         scene.cameraFollowSprite(challengerSprite)
-        pause(500)
+        pauseImpl(500)
 
         // TODO 此处有bug，下面两句较长的话都没有输出；
         judgeSprite.say("老师")
-        pause(1000)
+        pauseImpl(1000)
         judgeSprite.say("刚刚的数据考试的卷子都改好了")
-        pause(1000)
+        pauseImpl(2000)
         judgeSprite.say("快点统计这次的成绩吧")
-        pause(1000)
-
+        pauseImpl(2000)
         //过场动画 -end--
     }
 
@@ -266,7 +285,7 @@ namespace hocCubicbird {
         let cnt = 0
 
         judgeSprite.say("开始统计吧")
-        pause(500)
+        pauseImpl(500)
         challengerSprite.say("好")
 
         for (let i = 0; i < RESULT_SIZE; i++) {
@@ -284,7 +303,7 @@ namespace hocCubicbird {
             } 
 
             judgeSprite.say("学号:" + studentId)
-            pause(1000 / speedRatio)
+            pauseImpl(1000 / speedRatio)
             judgeSprite.say("成绩:" + score)
 
             let paperSprite = sprites.createProjectileFromSprite(img`
@@ -305,9 +324,7 @@ namespace hocCubicbird {
                 . 1 1 1 1 1 1 1 1 1 1 1 1 1 1 .
                 . . 1 1 1 1 1 1 1 1 1 1 1 1 . .
             `, judgeSprite, 0, 0)
-            // paperSprite.vy = -100//更改：paper先往上移动半秒，防止撞墙销毁
 
-            // pause(500)
             paperSprite.follow(challengerSprite, 100)
             paperSprite.lifespan = 1000    
 
@@ -317,12 +334,12 @@ namespace hocCubicbird {
             
         }
 
-        pause(1000)
+        pauseImpl(1000)
 
         judgeSprite.say("统计好了吧")
-        pause(1000)
+        pauseImpl(1000)
         judgeSprite.say("我们核对一下统计结果")
-        pause(1000)
+        pauseImpl(1000)
 
         statFinishedCallback()
 
@@ -333,16 +350,29 @@ namespace hocCubicbird {
         challengeThinks(5, 50)
 
         challengerSprite.say(_submitAvg.toString())
-        pause(1000)
+        pauseImpl(1000)
 
+
+
+        const avgResultLine = "AvgScore = " + _submitAvg
         if (avg == _submitAvg) {
             _result.level2avgCorrect = true
             judgeSprite.say("嗯，正确!")
+            _result.problemLines.push({
+                line: avgResultLine,
+                isCorrect:true,
+                oneline:true
+            })
         } else {
             scene.cameraShake()
             judgeSprite.say("错了呀，应该是" + avg.toString())
+            _result.problemLines.push({
+                line: avgResultLine,
+                isCorrect:false,
+                oneline:true
+            })
         }
-        pause(1000)
+        pauseImpl(1000)
 
 
         judgeSprite.say("最高分是？")
@@ -350,30 +380,53 @@ namespace hocCubicbird {
         challengeThinks(5, 50)
 
         challengerSprite.say(_submitHighestScore.toString())
-        pause(1000)
+        pauseImpl(1000)
         
+        const hsResultLine = "HighScore = " + _submitHighestScore
         if (hs == _submitHighestScore) {
             _result.level2hsCorrect = true
             judgeSprite.say("嗯，正确!")
+            _result.problemLines.push({
+                line: hsResultLine,
+                isCorrect:true,
+                oneline:true
+            })
         } else {
             scene.cameraShake()
             judgeSprite.say("错了呀，应该是" + hs.toString())
+            _result.problemLines.push({
+                line: hsResultLine,
+                isCorrect:false,
+                oneline:true
+            })
         }
-        pause(1000)
+        pauseImpl(1000)
 
         judgeSprite.say("最高分有几个人？")
         
         challengeThinks(5, 50)
 
         challengerSprite.say(_submitHighestScoreCount.toString())
-        pause(1000)
+        pauseImpl(1000)
 
+
+        const hsCountResultLine = "hsCount = " + _submitHighestScoreCount    
         if (cnt == _submitHighestScoreCount) {
             _result.level2hsCountCorrect = true
             judgeSprite.say("嗯，正确!")
+            _result.problemLines.push({
+                line: hsCountResultLine,
+                isCorrect:false,
+                oneline:true
+            })
         } else {
             scene.cameraShake()            
             judgeSprite.say("错了呀，应该是" + hs.toString())
+            _result.problemLines.push({
+                line: hsCountResultLine,
+                isCorrect:false,
+                oneline:true
+            })
         }
 
     }
@@ -383,7 +436,7 @@ namespace hocCubicbird {
         for (let i = 0;i < times;i++) {
             str += "."
             challengerSprite.say(str)
-            pause(pauseMillis)    
+            pauseImpl(pauseMillis)    
         }
     }
 
@@ -497,15 +550,15 @@ namespace hocCubicbird {
         judgeSprite.say("下一位挑战者")
 
         control.runInParallel(function() {
-            pause(1000)
+            pauseImpl(1000)
             judgeSprite.say(challengerName)            
         })
 
         while(challengerSprite.vy != 0) {
-            pause(10)
+            pauseImpl(10)
         }
         judgeSprite.say("挑战开始")
-        pause(1000)
+        pauseImpl(1000)
         
         for(let i = 0; i < PROBLEM_SIZE; i++) {
             judgeSprite.say("请听题")
@@ -544,9 +597,9 @@ namespace hocCubicbird {
             }
 
             leftOpSprite.say(leftOperand.toString())
-            pause(500)
+            pauseImpl(500)
             opSprite.say(opString(operator))
-            pause(500)
+            pauseImpl(500)
             rightOpSprite.say(rightOperand.toString())
 
             challengeThinks(5, 200)
@@ -557,11 +610,12 @@ namespace hocCubicbird {
 
 
             const lineForResult = leftOperand.toString() + opString(operator) + rightOperand.toString() + "=" + _currentAnswer.toString()
-            pause(1000)
+            pauseImpl(1000)
             if (_currentAnswer == correctAnswer) {
                 _result.problemLines.push({
                     line: lineForResult,
-                    isCorrect:true
+                    isCorrect:true,
+                    oneline:false
                 })
                 _result.level1Correct += 1
                 info.changeScoreBy(10)
@@ -569,22 +623,23 @@ namespace hocCubicbird {
             }  else {
                 _result.problemLines.push({
                     line: lineForResult,
-                    isCorrect:false
+                    isCorrect:false,
+                    oneline:false
                 })
                 scene.cameraShake()
                 judgeSprite.say("回答错误")
             }
-            pause(1000)
+            pauseImpl(1000)
         }
 
         judgeSprite.say("测验结束，总得分" + info.score())
 
-        pause(3000)
+        pauseImpl(3000)
     }
 
     function summary() {
 
-        tiles.placeOnTile(judgeSprite, tiles.getTileLocation(9,1))
+        tiles.placeOnTile(judgeSprite, tiles.getTileLocation(0,0))
         judgeSprite.say(challengerName)
 
         tiles.setTilemap(tilemap`level_1`)
